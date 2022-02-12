@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import classNames from "classnames";
-import { Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { CSSTransition } from "react-transition-group";
 
 import { AppTopbar } from "./AppTopbar";
@@ -10,31 +10,31 @@ import { AppConfig } from "./AppConfig";
 
 import { Dashboard } from "./components/Dashboard";
 import { Customer } from "./pages/Customer";
-import { Login } from "./pages/Login"
+import { Login } from "./pages/Login";
 
-import { ButtonDemo } from "./components/ButtonDemo";
-import { ChartDemo } from "./components/ChartDemo";
-import { Documentation } from "./components/Documentation";
-import { FileDemo } from "./components/FileDemo";
-import { FloatLabelDemo } from "./components/FloatLabelDemo";
-import { FormLayoutDemo } from "./components/FormLayoutDemo";
-import { InputDemo } from "./components/InputDemo";
-import { ListDemo } from "./components/ListDemo";
-import { MenuDemo } from "./components/MenuDemo";
-import { MessagesDemo } from "./components/MessagesDemo";
-import { MiscDemo } from "./components/MiscDemo";
-import { OverlayDemo } from "./components/OverlayDemo";
-import { MediaDemo } from "./components/MediaDemo";
-import { PanelDemo } from "./components/PanelDemo";
-import { TableDemo } from "./components/TableDemo";
-import { TreeDemo } from "./components/TreeDemo";
-import { InvalidStateDemo } from "./components/InvalidStateDemo";
-import { BlocksDemo } from "./components/BlocksDemo";
-import { IconsDemo } from "./components/IconsDemo";
+// import { ButtonDemo } from "./components/ButtonDemo";
+// import { ChartDemo } from "./components/ChartDemo";
+// import { Documentation } from "./components/Documentation";
+// import { FileDemo } from "./components/FileDemo";
+// import { FloatLabelDemo } from "./components/FloatLabelDemo";
+// import { FormLayoutDemo } from "./components/FormLayoutDemo";
+// import { InputDemo } from "./components/InputDemo";
+// import { ListDemo } from "./components/ListDemo";
+// import { MenuDemo } from "./components/MenuDemo";
+// import { MessagesDemo } from "./components/MessagesDemo";
+// import { MiscDemo } from "./components/MiscDemo";
+// import { OverlayDemo } from "./components/OverlayDemo";
+// import { MediaDemo } from "./components/MediaDemo";
+// import { PanelDemo } from "./components/PanelDemo";
+// import { TableDemo } from "./components/TableDemo";
+// import { TreeDemo } from "./components/TreeDemo";
+// import { InvalidStateDemo } from "./components/InvalidStateDemo";
+// import { BlocksDemo } from "./components/BlocksDemo";
+// import { IconsDemo } from "./components/IconsDemo";
 
-import { Crud } from "./pages/Crud";
-import { EmptyPage } from "./pages/EmptyPage";
-import { TimelineDemo } from "./pages/TimelineDemo";
+// import { Crud } from "./pages/Crud";
+// import { EmptyPage } from "./pages/EmptyPage";
+// import { TimelineDemo } from "./pages/TimelineDemo";
 
 import PrimeReact from "primereact/api";
 import { Tooltip } from "primereact/tooltip";
@@ -49,16 +49,20 @@ import "./assets/layout/layout.scss";
 import "./App.scss";
 
 import navigation from "./_nav";
+import AuthContext from "./AuthProvider";
 
 const App = () => {
+    const [overlayMenuActive, setOverlayMenuActive] = useState(false);
+    const [mobileMenuActive, setMobileMenuActive] = useState(false);
+    const [mobileTopbarMenuActive, setMobileTopbarMenuActive] = useState(false);
+    const { isLoggedIn } = useContext(AuthContext);
+
     const [layoutMode, setLayoutMode] = useState("static");
     const [layoutColorMode, setLayoutColorMode] = useState("light");
     const [inputStyle, setInputStyle] = useState("outlined");
     const [ripple, setRipple] = useState(true);
     const [staticMenuInactive, setStaticMenuInactive] = useState(false);
-    const [overlayMenuActive, setOverlayMenuActive] = useState(false);
-    const [mobileMenuActive, setMobileMenuActive] = useState(false);
-    const [mobileTopbarMenuActive, setMobileTopbarMenuActive] = useState(false);
+
     const copyTooltipRef = useRef();
     const location = useLocation();
 
@@ -180,53 +184,88 @@ const App = () => {
         "layout-theme-light": layoutColorMode === "light",
     });
 
+    const layoutMainContainerClass = classNames(isLoggedIn ? "layout-main-container" : "");
+    const layoutMainClass = classNames(isLoggedIn ? "layout-main" : "");
+
+    const RequireAuth = ({ children }) => {
+        if (!isLoggedIn) {
+            return <Navigate to="/login" state={{ from: location }} />;
+        }
+        return children;
+    };
+
     return (
         <div className={wrapperClass} onClick={onWrapperClick}>
-            <Tooltip ref={copyTooltipRef} target=".block-action-copy" position="bottom" content="Copied to clipboard" event="focus" />
+            {isLoggedIn && (
+                <>
+                    <Tooltip ref={copyTooltipRef} target=".block-action-copy" position="bottom" content="Copied to clipboard" event="focus" />
 
-            <AppTopbar onToggleMenuClick={onToggleMenuClick} layoutColorMode={layoutColorMode} mobileTopbarMenuActive={mobileTopbarMenuActive} onMobileTopbarMenuClick={onMobileTopbarMenuClick} onMobileSubTopbarMenuClick={onMobileSubTopbarMenuClick} />
+                    <AppTopbar onToggleMenuClick={onToggleMenuClick} layoutColorMode={layoutColorMode} mobileTopbarMenuActive={mobileTopbarMenuActive} onMobileTopbarMenuClick={onMobileTopbarMenuClick} onMobileSubTopbarMenuClick={onMobileSubTopbarMenuClick} />
 
-            <div className="layout-sidebar" onClick={onSidebarClick}>
-                <AppMenu model={navigation} onMenuItemClick={onMenuItemClick} layoutColorMode={layoutColorMode} />
-            </div>
-
-            <div className="layout-main-container">
-                <div className="layout-main">
-                    <Route path="/" exact render={() => <Dashboard colorMode={layoutColorMode} />} />
-                    <Route path="/customer" component={Customer} /> 
-                    <Route path="/login" component={Login} /> 
-                    <Route path="/formlayout" component={FormLayoutDemo} />
-                    <Route path="/input" component={InputDemo} />
-                    <Route path="/floatlabel" component={FloatLabelDemo} />
-                    <Route path="/invalidstate" component={InvalidStateDemo} />
-                    <Route path="/button" component={ButtonDemo} />
-                    <Route path="/table" component={TableDemo} />
-                    <Route path="/list" component={ListDemo} />
-                    <Route path="/tree" component={TreeDemo} />
-                    <Route path="/panel" component={PanelDemo} />
-                    <Route path="/overlay" component={OverlayDemo} />
-                    <Route path="/media" component={MediaDemo} />
-                    <Route path="/menu" component={MenuDemo} />
-                    <Route path="/messages" component={MessagesDemo} />
-                    <Route path="/blocks" component={BlocksDemo} />
-                    <Route path="/icons" component={IconsDemo} />
-                    <Route path="/file" component={FileDemo} />
-                    <Route path="/chart" render={() => <ChartDemo colorMode={layoutColorMode} />} />
-                    <Route path="/misc" component={MiscDemo} />
-                    <Route path="/timeline" component={TimelineDemo} />
-                    <Route path="/crud" component={Crud} />
-                    <Route path="/empty" component={EmptyPage} />
-                    <Route path="/documentation" component={Documentation} />
+                    <div className="layout-sidebar" onClick={onSidebarClick}>
+                        <AppMenu model={navigation} onMenuItemClick={onMenuItemClick} layoutColorMode={layoutColorMode} />
+                    </div>
+                </>
+            )}
+            <div className={layoutMainContainerClass}>
+                <div className={layoutMainClass}>
+                    <Routes>
+                        <Route path="/login" element={<Login />} />
+                        <Route
+                            path="/"
+                            exact="true"
+                            element={
+                                <RequireAuth>
+                                    <Dashboard />
+                                </RequireAuth>
+                            }
+                        />
+                        {/* <Route path="/" exact render={() => <Dashboard colorMode={layoutColorMode} />} /> */}
+                        <Route
+                            path="/customer"
+                            element={
+                                <RequireAuth>
+                                    <Customer />
+                                </RequireAuth>
+                            }
+                        />
+                        {/* <Route path="/login" component={Login} />
+                        <Route path="/formlayout" component={FormLayoutDemo} />
+                        <Route path="/input" component={InputDemo} />
+                        <Route path="/floatlabel" component={FloatLabelDemo} />
+                        <Route path="/invalidstate" component={InvalidStateDemo} />
+                        <Route path="/button" component={ButtonDemo} />
+                        <Route path="/table" component={TableDemo} />
+                        <Route path="/list" component={ListDemo} />
+                        <Route path="/tree" component={TreeDemo} />
+                        <Route path="/panel" component={PanelDemo} />
+                        <Route path="/overlay" component={OverlayDemo} />
+                        <Route path="/media" component={MediaDemo} />
+                        <Route path="/menu" component={MenuDemo} />
+                        <Route path="/messages" component={MessagesDemo} />
+                        <Route path="/blocks" component={BlocksDemo} />
+                        <Route path="/icons" component={IconsDemo} />
+                        <Route path="/file" component={FileDemo} />
+                        <Route path="/chart" render={() => <ChartDemo colorMode={layoutColorMode} />} />
+                        <Route path="/misc" component={MiscDemo} />
+                        <Route path="/timeline" component={TimelineDemo} />
+                        <Route path="/crud" component={Crud} />
+                        <Route path="/empty" component={EmptyPage} />
+                        <Route path="/documentation" component={Documentation} /> */}
+                    </Routes>
                 </div>
 
                 <AppFooter layoutColorMode={layoutColorMode} />
             </div>
+            {isLoggedIn && (
+                <>
+                    <AppConfig rippleEffect={ripple} onRippleEffect={onRipple} inputStyle={inputStyle} onInputStyleChange={onInputStyleChange} layoutMode={layoutMode} onLayoutModeChange={onLayoutModeChange} layoutColorMode={layoutColorMode} onColorModeChange={onColorModeChange} />
 
-            <AppConfig rippleEffect={ripple} onRippleEffect={onRipple} inputStyle={inputStyle} onInputStyleChange={onInputStyleChange} layoutMode={layoutMode} onLayoutModeChange={onLayoutModeChange} layoutColorMode={layoutColorMode} onColorModeChange={onColorModeChange} />
-
-            <CSSTransition classNames="layout-mask" timeout={{ enter: 200, exit: 200 }} in={mobileMenuActive} unmountOnExit>
-                <div className="layout-mask p-component-overlay"></div>
-            </CSSTransition>
+                    <CSSTransition classNames="layout-mask" timeout={{ enter: 200, exit: 200 }} in={mobileMenuActive} unmountOnExit>
+                        <div className="layout-mask p-component-overlay"></div>
+                    </CSSTransition>
+                </>
+            )}
         </div>
     );
 };
